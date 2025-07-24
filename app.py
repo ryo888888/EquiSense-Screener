@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import os
+import pytz
 
 # --- 定数と設定 ---
 
@@ -102,8 +103,17 @@ st.sidebar.header('ℹ️ データ情報')
 try:
     # データファイルの最終更新日時を取得
     last_modified_unix = os.path.getmtime(PREFETCHED_DATA_PATH)
-    last_modified_dt = datetime.fromtimestamp(last_modified_unix)
-    last_modified_str = last_modified_dt.strftime("%Y年%m月%d日 %H:%M")
+
+    # naiveなdatetimeオブジェクトをUTCとして作成
+    naive_dt = datetime.utcfromtimestamp(last_modified_unix)
+
+    # pytzを使ってUTCのタイムゾーン情報を付与し、日本時間に変換
+    utc_dt = pytz.utc.localize(naive_dt)
+    jst = pytz.timezone('Asia/Tokyo')
+    jst_dt = utc_dt.astimezone(jst)
+
+    # 表示用にフォーマット
+    last_modified_str = jst_dt.strftime("%Y年%m月%d日 %H:%M JST")
     st.sidebar.caption(f"データ最終更新: {last_modified_str}")
 except FileNotFoundError:
     # ファイルがない場合は警告を表示
