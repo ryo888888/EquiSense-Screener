@@ -197,6 +197,8 @@ if run_button:
 
         # 表示用にパーセント値を100倍する (CSV保存用とは別のDataFrameを操作)
         display_df_formatted = display_df.copy()
+        if '配当利回り' in display_df_formatted.columns:
+            display_df_formatted['配当利回り'] *= 100
         if '収益成長率' in display_df_formatted.columns:
             display_df_formatted['収益成長率'] *= 100
 
