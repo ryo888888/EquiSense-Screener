@@ -1,0 +1,40 @@
+name: Update Stock Data
+
+on:
+  workflow_dispatch: # 手動実行を許可
+  schedule:
+    # 毎日06:30 (UTC) に実行 (日本時間 午後3時30分)
+    # 日本の株式市場が閉まった直後のデータを取得するため
+    - cron: '30 6 * * *'
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Download master list and fetch stock data
+        run: |
+          python download_master_list.py
+          python fetch_data.py
+
+      - name: Commit and push if there are changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated: Update stock data"
+          file_pattern: "all_stock_data.parquet tosho_list.xlsx"
+          commit_user_name: "GitHub Actions Bot"
+          commit_user_email: "actions@github.com"
+          commit_author: "GitHub Actions <actions@github.com>"
+
