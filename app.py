@@ -152,6 +152,10 @@ if run_button:
         operator = param['operator']
         user_value = user_inputs[key]
         
+        # is_percentがTrueの場合、値を100で割って小数に変換
+        if param.get('is_percent', False):
+            user_value /= 100.0
+        
         if operator == '>=':
             result_df = result_df[result_df[key] >= user_value]
         elif operator == '<=':
