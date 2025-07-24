@@ -41,16 +41,25 @@ def get_stock_info(ticker_symbol):
         info = stock.info
         if 'longName' not in info or info['longName'] is None:
             return None
+
+        # --- 配当利回りの計算 ---
+        # 年間配当(dividendRate)と株価(currentPrice)から配当利回りを計算
+        dividend_rate = info.get('dividendRate')
+        current_price = info.get('currentPrice')
+
+        dividend_yield = None
+        # 配当と株価の両方が取得でき、株価が0より大きい場合のみ計算
+        if dividend_rate is not None and current_price is not None and current_price > 0:
+            dividend_yield = dividend_rate / current_price
+        # --- ここまで ---
+
         return {
             'ticker': ticker_symbol,
-            'companyName': info.get('longName'), # 社名
+            'companyName': info.get('longName'),
             'forwardPE': info.get('forwardPE'),
             'priceToBook': info.get('priceToBook'),
-            # yfinanceは%表記(4.0)と小数表記(0.04)が混在するため、正規化する
-            'dividendYield': (
-                lambda y: y / 100.0 if y is not None and y > 1.0 else y
-            )(info.get('dividendYield', 0)),
-            'currentPrice': info.get('currentPrice'), # 現在値
+            'dividendYield': dividend_yield,
+            'currentPrice': current_price,
             'beta': info.get('beta'),
             'earningsGrowth': info.get('earningsGrowth'),
         }
